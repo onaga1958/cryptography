@@ -1,24 +1,32 @@
+#include <iostream>
 #include <array>
 #include <fstream>
 #include <utility>
 #include "grasshopper.h"
 
+std::array<unsigned char, N>&& get_reverse_array(const std::array<unsigned char, N>& array) {
+    std::array<unsigned char, N> result;
+    for (unsigned short i = 0; i < N; i++)
+	result[array[i]] = i;
+    return std::move(result);
+}
+
 unsigned char poly_multiplication(unsigned char a, unsigned char b) {
     unsigned short result = 0;
     for (unsigned char i = 0; i < 8; i++) {
 	if ((a >> i) % 2)
-	    result += b << i;
+	    result ^= b << i;
     }
 
     while (true) {
 	unsigned char i = 15;
-	while (!((a >> i) % 2))
+	while (!((result >> i) % 2) && i >= 8)
 	    i--;
 
 	if (i < 8)
 	    break;
 
-	result -= DIVIDER << (i - 8);
+	result ^= DIVIDER << (i - 8);
     }
 
     return result;
@@ -29,6 +37,21 @@ Block X_function(const Block& block, const Block& key) {
     for (unsigned char i; i < SECTIONS_NUMBER; i++)
 	result[i] = block[i] ^ key[i];
     return result;
+}
+
+Block&& S_function(const Block& block) {
+    Block result;
+    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
+	result[i] = PI_ARRAY[block[i]];
+    return std::move(result);
+}
+
+Block&& L_function(const Block& block) {
+    Block result = {0};
+    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
+	for (unsigned char j = 0; j < SECTIONS_NUMBER; j++)
+	    result[j] ^= poly_multiplication(LTransformationMatrix[i][j], block[i]);
+    return std::move(result);
 }
 
 MainKey F_function(const Block& block_1, const Block& block_0, const Block& key) {

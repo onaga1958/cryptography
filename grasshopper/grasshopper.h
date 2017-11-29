@@ -6,18 +6,11 @@ const unsigned char CONSTANTS_NUM = 8;
 const unsigned char ITERATIONS_NUM = 10;
 const unsigned short DIVIDER = 256 + 128 + 64 + 2 + 1;
 const char TESTS_NUM = 4;
-std::array<unsigned char, SECTIONS_NUMBER> LINEAR_INDEXES = {0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 6};
-std::array<unsigned char, CONSTANTS_NUM> POLY_CONSTANTS = {148, 32, 133, 16, 194, 192, 1, 251};
+const std::array<unsigned char, SECTIONS_NUMBER> LINEAR_INDEXES = {0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 6};
+const std::array<unsigned char, CONSTANTS_NUM> POLY_CONSTANTS = {148, 32, 133, 16, 194, 192, 1, 251};
 const std::string TABLES_PATH = "tables.txt";
-
-std::array<unsigned char, N> get_reverse_array(std::array<unsigned char, N> array) {
-    std::array<unsigned char, N> result;
-    for (unsigned short i = 0; i < N; i++)
-	result[array[i]] = i;
-    return result;
-}
-
-std::array<unsigned char, N> PI_ARRAY = {252, 238, 221, 17, 207, 110, 49, 22, 251, 196, 250, 218, 35, 197, 4, 77, 233,
+const std::array<unsigned char, N> PI_ARRAY = {
+    252, 238, 221, 17, 207, 110, 49, 22, 251, 196, 250, 218, 35, 197, 4, 77, 233,
     119, 240, 219, 147, 46, 153, 186, 23, 54, 241, 187, 20, 205, 95, 193, 249, 24, 101,
     90, 226, 92, 239, 33, 129, 28, 60, 66, 139, 1, 142, 79, 5, 132, 2, 174, 227, 106, 143,
     160, 6, 11, 237, 152, 127, 212, 211, 31, 235, 52, 44, 81, 234, 200, 72, 171, 242, 42,
@@ -30,8 +23,11 @@ std::array<unsigned char, N> PI_ARRAY = {252, 238, 221, 17, 207, 110, 49, 22, 25
     165, 125, 105, 213, 149, 59, 7, 88, 179, 64, 134, 172, 29, 247, 48, 55, 107, 228, 136,
     217, 231, 137, 225, 27, 131, 73, 76, 63, 248, 254, 141, 83, 170, 144, 202, 216, 133,
     97, 32, 113, 103, 164, 45, 43, 9, 91, 203, 155, 37, 208, 190, 229, 108, 82, 89, 166,
-    116, 210, 230, 244, 180, 192, 209, 102, 175, 194, 57, 75, 99, 182};
-std::array<unsigned char, N> REVERSE_PI_ARRAY = get_reverse_array(PI_ARRAY);
+    116, 210, 230, 244, 180, 192, 209, 102, 175, 194, 57, 75, 99, 182
+};
+
+std::array<unsigned char, N>&& get_reverse_array(const std::array<unsigned char, N>& array);
+const std::array<unsigned char, N> REVERSE_PI_ARRAY = get_reverse_array(PI_ARRAY);
 
 const unsigned char LTransformationMatrix[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
     0xcf, 0x6e, 0xa2, 0x76, 0x72, 0x6c, 0x48, 0x7a, 0xb8, 0x5d, 0x27, 0xbd, 0x10, 0xdd, 0x84, 0x94,
@@ -80,23 +76,8 @@ typedef std::array<char *, TESTS_NUM> StringArray;
 unsigned char poly_multiplication(unsigned char a, unsigned char b);
 Block encoding(Block block, const Keys& keys);
 Block X_function(const Block& block, const Block& key);
-Block S_function(const Block& block);
-Block L_function(const Block& block);
+Block&& S_function(const Block& block);
+Block&& L_function(const Block& block);
 MainKey F_function(const Block& block_1, const Block& block_0, const Block& key);
 Keys get_iteration_keys(MainKey key);
 Block encoding(Block block, const Keys& keys);
-
-Block S_function(const Block& block) {
-    Block result;
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
-	result[i] = PI_ARRAY[block[i]];
-    return result;
-}
-
-Block L_function(const Block& block) {
-    Block result = {0};
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
-	for (unsigned char j = 0; j < SECTIONS_NUMBER; j++)
-	    result[j] ^= poly_multiplication(LTransformationMatrix[i][j], block[i]);
-    return result;
-}

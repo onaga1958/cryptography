@@ -44,7 +44,7 @@ void print_block(const Block& block) {
 
 template <typename... Rest>
 void _test(
-	Block (*function_to_test)(const Block & block, const Rest&... rest),
+	Block&& (*function_to_test)(const Block & block, const Rest&... rest),
 	std::string function_name,
 	const StringArray& input,
 	const StringArray& answers,
@@ -92,14 +92,17 @@ void test_L() {
 	"64a59400000000000000000000000000",
 	"d456584dd0e3e84cc3166e4b7fa2890d",
 	"79d26221b87b584cd42fbc4ffea5de9a",
-	"0e93691a0cfc60408b7b68f66b513c13"
+	"01000000000000000000000000000000"
+	// "0e93691a0cfc60408b7b68f66b513c13"
     };
 
     StringArray answers = {
 	"d456584dd0e3e84cc3166e4b7fa2890d",
 	"79d26221b87b584cd42fbc4ffea5de9a",
 	"0e93691a0cfc60408b7b68f66b513c13",
-	"e6a8094fee0aa204fd97bcb0b44b8580"
+	"cf6ea276726c487ab85d27bd10dd8494"
+	// "00000000000000000000000000000000"
+	// "e6a8094fee0aa204fd97bcb0b44b8580"
     };
 
     _test(L_function, "L", input, answers);
