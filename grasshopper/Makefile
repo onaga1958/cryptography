@@ -1,13 +1,16 @@
 all: main test
 
-main: grasshopper
-	g++ main.cpp grasshopper.o -o main
+main: grasshopper utils
+	g++ main.cpp grasshopper.o utils.o -o main -Wno-write-strings -Ofast
 
-test: grasshopper
-	g++ test.cpp grasshopper.o -o test -Wno-write-strings
+test: grasshopper utils
+	g++ test.cpp grasshopper.o utils.o -o test -Wno-write-strings -Ofast
 
 grasshopper:
-	g++ -c grasshopper.cpp -o grasshopper.o
+	g++ -c grasshopper.cpp -o grasshopper.o -Ofast
+
+utils:
+	g++ -c utils.cpp -o utils.o
 
 clean:
 	rm -rf *.o main test

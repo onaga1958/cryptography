@@ -4,47 +4,11 @@
 #include <fstream>
 #include <utility>
 #include "grasshopper.h"
+#include "utils.h"
 
-unsigned char _to_uchar(char hex_symb) {
-    if ('0' <= hex_symb && hex_symb <= '9')
-	return hex_symb - '0';
-    else
-	return hex_symb - 'a' + 10;
-}
-
-unsigned char to_uchar(char * hex_symb_pair) {
-    return (_to_uchar(hex_symb_pair[0]) << 4) + _to_uchar(hex_symb_pair[1]);
-}
-
-Block string_to_block(char * str) {
-    Block result;
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++) {
-	result[i] = to_uchar(str + i * 2);
-    }
-    return result;
-}
-
-char _uchar_to_hex(unsigned char ch) {
-    if (ch < 10)
-	return '0' + ch;
-    else
-	return 'a' - 10 + ch;
-}
-
-std::string uchar_to_hex_string(unsigned char uchar) {
-    std::string result = {_uchar_to_hex(uchar >> 4), _uchar_to_hex(uchar & 15)};
-    return result;
-}
-
-void print_block(const Block& block) {
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
-	std::cout << uchar_to_hex_string(block[i]);
-    std::cout << std::endl;
-}
-
-template <typename... Rest>
+template <typename T, typename... Rest>
 void _test(
-	Block&& (*function_to_test)(const Block & block, const Rest&... rest),
+	Block (*function_to_test)(T block, const Rest&... rest),
 	std::string function_name,
 	const StringArray& input,
 	const StringArray& answers,
@@ -108,9 +72,141 @@ void test_L() {
     _test(L_function, "L", input, answers);
 }
 
+void test_get_iteration_keys() {
+    MainKey key(
+	string_to_block("8899aabbccddeeff0011223344556677"),
+	string_to_block("fedcba98765432100123456789abcdef")
+    );
+    Keys right_keys = {
+	string_to_block("8899aabbccddeeff0011223344556677"),
+	string_to_block("fedcba98765432100123456789abcdef"),
+	string_to_block("db31485315694343228d6aef8cc78c44"),
+	string_to_block("3d4553d8e9cfec6815ebadc40a9ffd04"),
+	string_to_block("57646468c44a5e28d3e59246f429f1ac"),
+	string_to_block("bd079435165c6432b532e82834da581b"),
+	string_to_block("51e640757e8745de705727265a0098b1"),
+	string_to_block("5a7925017b9fdd3ed72a91a22286f984"),
+	string_to_block("bb44e25378c73123a5f32f73cdb6e517"),
+	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
+    };
+
+    Keys answer = get_iteration_keys(key);
+    bool right = answer == right_keys;
+    std::cout << "get_iteration_keys test: " << right << "\n";
+    if (!right) {
+	for (int i = 0; i < ITERATIONS_NUM; i++) {
+	    std::cout << "right " << i << " key: ";
+	    print_block(right_keys[i]);
+	    std::cout << "got   " << i << " key: ";
+	    print_block(answer[i]);
+	}
+    }
+    std::cout << std::endl;
+}
+
+void test_encoding() {
+    Keys keys = {
+	string_to_block("8899aabbccddeeff0011223344556677"),
+	string_to_block("fedcba98765432100123456789abcdef"),
+	string_to_block("db31485315694343228d6aef8cc78c44"),
+	string_to_block("3d4553d8e9cfec6815ebadc40a9ffd04"),
+	string_to_block("57646468c44a5e28d3e59246f429f1ac"),
+	string_to_block("bd079435165c6432b532e82834da581b"),
+	string_to_block("51e640757e8745de705727265a0098b1"),
+	string_to_block("5a7925017b9fdd3ed72a91a22286f984"),
+	string_to_block("bb44e25378c73123a5f32f73cdb6e517"),
+	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
+    };
+
+    Block a = string_to_block("1122334455667700ffeeddccbbaa9988");
+    Block right_answer = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
+    Block answer = encoding(a, keys);
+    bool right = answer == right_answer;
+    std::cout << "encoding test: " << right << "\n";
+    if (!right) {
+	std::cout << "right: ";
+	print_block(right_answer);
+	std::cout << "  got: ";
+	print_block(answer);
+    }
+    std::cout << std::endl;
+}
+
+void test_S_i() {
+    StringArray answers = {
+	"ffeeddccbbaa99881122334455667700",
+	"b66cd8887d38e8d77765aeea0c9a7efc",
+	"559d8dd7bd06cbfe7e7b262523280d39",
+	"0c3322fed531e4630d80ef5c5a81c50b"
+    };
+
+    StringArray input = {
+	"b66cd8887d38e8d77765aeea0c9a7efc",
+	"559d8dd7bd06cbfe7e7b262523280d39",
+	"0c3322fed531e4630d80ef5c5a81c50b",
+	"23ae65633f842d29c5df529c13f5acda"
+    };
+
+    _test(S_i_function, "S_i", input, answers);
+}
+
+void test_L_i() {
+    StringArray answers = {
+	"64a59400000000000000000000000000",
+	"d456584dd0e3e84cc3166e4b7fa2890d",
+	"79d26221b87b584cd42fbc4ffea5de9a",
+	"01000000000000000000000000000000"
+	// "0e93691a0cfc60408b7b68f66b513c13"
+    };
+
+    StringArray input = {
+	"d456584dd0e3e84cc3166e4b7fa2890d",
+	"79d26221b87b584cd42fbc4ffea5de9a",
+	"0e93691a0cfc60408b7b68f66b513c13",
+	"cf6ea276726c487ab85d27bd10dd8494"
+	// "00000000000000000000000000000000"
+	// "e6a8094fee0aa204fd97bcb0b44b8580"
+    };
+
+    _test(L_i_function, "L_i", input, answers);
+}
+
+void test_decoding() {
+    Keys keys = {
+	string_to_block("8899aabbccddeeff0011223344556677"),
+	string_to_block("fedcba98765432100123456789abcdef"),
+	string_to_block("db31485315694343228d6aef8cc78c44"),
+	string_to_block("3d4553d8e9cfec6815ebadc40a9ffd04"),
+	string_to_block("57646468c44a5e28d3e59246f429f1ac"),
+	string_to_block("bd079435165c6432b532e82834da581b"),
+	string_to_block("51e640757e8745de705727265a0098b1"),
+	string_to_block("5a7925017b9fdd3ed72a91a22286f984"),
+	string_to_block("bb44e25378c73123a5f32f73cdb6e517"),
+	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
+    };
+
+    Block right_answer = string_to_block("1122334455667700ffeeddccbbaa9988");
+    Block b = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
+    Block answer = decoding(b, keys);
+    bool right = answer == right_answer;
+    std::cout << "encoding test: " << right << "\n";
+    if (!right) {
+	std::cout << "right: ";
+	print_block(right_answer);
+	std::cout << "  got: ";
+	print_block(answer);
+    }
+    std::cout << std::endl;
+}
+
 void test() {
     test_S();
     test_L();
+    test_get_iteration_keys();
+    test_encoding();
+    test_L_i();
+    test_S_i();
+    test_decoding();
 }
 
 int main() {
