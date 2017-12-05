@@ -14,7 +14,7 @@ void _test(
 	const StringArray& answers,
 	const Rest&... rest) {
 
-    for (unsigned char i = 0; i < TESTS_NUM; i++) {
+    for (uint8_t i = 0; i < TESTS_NUM; i++) {
 	Block input_block = string_to_block(input[i]);
 	Block answer_block = string_to_block(answers[i]);
 	Block result_block = (*function_to_test)(input_block, rest...);
@@ -185,7 +185,7 @@ void test_decoding() {
 	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
     };
 
-    for (unsigned char i = ITERATIONS_NUM - 1; i > 0; i--)
+    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--)
 	keys[i] = L_i_function(keys[i]);
 
     Block right_answer = string_to_block("1122334455667700ffeeddccbbaa9988");

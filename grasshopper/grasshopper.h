@@ -2,7 +2,7 @@
 
 #include "utils.h"
 
-unsigned char poly_multiplication(unsigned char a, unsigned char b);
+uint8_t poly_multiplication(uint8_t a, uint8_t b);
 Block encoding(Block block, const Keys& keys);
 Block X_function(Block block, const Block& key);
 Block S_function(Block block);

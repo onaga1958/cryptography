@@ -3,14 +3,14 @@
 #include <array>
 
 const unsigned short N = 256;
-const unsigned char SECTIONS_NUMBER = 16;
-const unsigned char CONSTANTS_NUM = 8;
-const unsigned char ITERATIONS_NUM = 10;
+const uint8_t SECTIONS_NUMBER = 16;
+const uint8_t CONSTANTS_NUM = 8;
+const uint8_t ITERATIONS_NUM = 10;
 const unsigned short DIVIDER = 256 + 128 + 64 + 2 + 1;
 const char TESTS_NUM = 4;
-const std::array<unsigned char, SECTIONS_NUMBER> LINEAR_INDEXES = {0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 6};
-const std::array<unsigned char, CONSTANTS_NUM> POLY_CONSTANTS = {148, 32, 133, 16, 194, 192, 1, 251};
-const std::array<unsigned char, N> PI_ARRAY = {
+const std::array<uint8_t, SECTIONS_NUMBER> LINEAR_INDEXES = {0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 6};
+const std::array<uint8_t, CONSTANTS_NUM> POLY_CONSTANTS = {148, 32, 133, 16, 194, 192, 1, 251};
+const std::array<uint8_t, N> PI_ARRAY = {
     252, 238, 221, 17, 207, 110, 49, 22, 251, 196, 250, 218, 35, 197, 4, 77, 233,
     119, 240, 219, 147, 46, 153, 186, 23, 54, 241, 187, 20, 205, 95, 193, 249, 24, 101,
     90, 226, 92, 239, 33, 129, 28, 60, 66, 139, 1, 142, 79, 5, 132, 2, 174, 227, 106, 143,
@@ -27,10 +27,10 @@ const std::array<unsigned char, N> PI_ARRAY = {
     116, 210, 230, 244, 180, 192, 209, 102, 175, 194, 57, 75, 99, 182
 };
 
-std::array<unsigned char, N> get_reverse_array(const std::array<unsigned char, N>& array);
-const std::array<unsigned char, N> REVERSE_PI_ARRAY = get_reverse_array(PI_ARRAY);
+std::array<uint8_t, N> get_reverse_array(const std::array<uint8_t, N>& array);
+const std::array<uint8_t, N> REVERSE_PI_ARRAY = get_reverse_array(PI_ARRAY);
 
-const unsigned char L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
+const uint8_t L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
     0xcf, 0x6e, 0xa2, 0x76, 0x72, 0x6c, 0x48, 0x7a, 0xb8, 0x5d, 0x27, 0xbd, 0x10, 0xdd, 0x84, 0x94,
     0x98, 0x20, 0xc8, 0x33, 0xf2, 0x76, 0xd5, 0xe6, 0x49, 0xd4, 0x9f, 0x95, 0xe9, 0x99, 0x2d, 0x20,
     0x74, 0xc6, 0x87, 0x10, 0x6b, 0xec, 0x62, 0x4e, 0x87, 0xb8, 0xbe, 0x5e, 0xd0, 0x75, 0x74, 0x85,
@@ -49,7 +49,7 @@ const unsigned char L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
     0x6e, 0xa2, 0x76, 0x72, 0x6c, 0x48, 0x7a, 0xb8, 0x5d, 0x27, 0xbd, 0x10, 0xdd, 0x84, 0x94, 0x01,
 };
 
-const unsigned char INVERSED_L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
+const uint8_t INVERSED_L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
     0x01, 0x94, 0x84, 0xdd, 0x10, 0xbd, 0x27, 0x5d, 0xb8, 0x7a, 0x48, 0x6c, 0x72, 0x76, 0xa2, 0x6e,
     0x94, 0xa5, 0x64, 0x0d, 0x89, 0xa2, 0x7f, 0x4b, 0x6e, 0x16, 0xc3, 0x4c, 0xe8, 0xe3, 0xd0, 0x4d,
     0x20, 0x3c, 0x48, 0xf8, 0x48, 0x48, 0xc8, 0x8e, 0x2a, 0xf5, 0x02, 0xdd, 0x14, 0x30, 0x44, 0x8e,
@@ -68,7 +68,7 @@ const unsigned char INVERSED_L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
     0x94, 0x84, 0xdd, 0x10, 0xbd, 0x27, 0x5d, 0xb8, 0x7a, 0x48, 0x6c, 0x72, 0x76, 0xa2, 0x6e, 0xcf,
 };
 
-typedef std::array<unsigned char, SECTIONS_NUMBER> Block;
+typedef std::array<uint8_t, SECTIONS_NUMBER> Block;
 typedef std::array<Block, ITERATIONS_NUM> Keys;
 typedef std::pair<Block, Block> MainKey;
 typedef std::array<char *, TESTS_NUM> StringArray;

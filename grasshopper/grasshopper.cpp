@@ -4,22 +4,22 @@
 #include "grasshopper.h"
 #include "LS_matrix.h"
 
-std::array<unsigned char, N> get_reverse_array(const std::array<unsigned char, N>& array) {
-    std::array<unsigned char, N> result;
+std::array<uint8_t, N> get_reverse_array(const std::array<uint8_t, N>& array) {
+    std::array<uint8_t, N> result;
     for (unsigned short i = 0; i < N; i++)
 	result[array[i]] = i;
     return result;
 }
 
-unsigned char poly_multiplication(unsigned char a, unsigned char b) {
+uint8_t poly_multiplication(uint8_t a, uint8_t b) {
     unsigned short result = 0;
-    for (unsigned char i = 0; i < 8; i++) {
+    for (uint8_t i = 0; i < 8; i++) {
 	if ((a >> i) % 2)
 	    result ^= b << i;
     }
 
     while (true) {
-	unsigned char i = 15;
+	uint8_t i = 15;
 	while (!((result >> i) % 2) && i >= 8)
 	    i--;
 
@@ -33,21 +33,21 @@ unsigned char poly_multiplication(unsigned char a, unsigned char b) {
 }
 
 Block X_function(Block block, const Block& key) {
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] ^= key[i];
     return block;
 }
 
 Block S_function(Block block) {
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] = PI_ARRAY[block[i]];
     return block;
 }
 
 Block L_function(const Block& block) {
     Block result = {0};
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
-	for (unsigned char j = 0; j < SECTIONS_NUMBER; j++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
 	    result[j] ^= poly_multiplication(L_MATRIX[i][j], block[i]);
     return result;
 }
@@ -78,8 +78,8 @@ Keys get_iteration_keys(MainKey key) {
     keys[0] = key.first;
     keys[1] = key.second;
 
-    for (unsigned char i = 1; i <= ITERATIONS_NUM / 2 - 1; i++) {
-	for (unsigned char j = 1; j <= 8; j++) {
+    for (uint8_t i = 1; i <= ITERATIONS_NUM / 2 - 1; i++) {
+	for (uint8_t j = 1; j <= 8; j++) {
 	    Block constant_iter = {0};
 	    constant_iter[SECTIONS_NUMBER - 1] = 8 * (i - 1) + j;
 	    Block constant = L_function(constant_iter);
@@ -92,28 +92,28 @@ Keys get_iteration_keys(MainKey key) {
 }
 
 Block encoding(Block block, const Keys& keys) {
-    for (unsigned char i = 0; i < ITERATIONS_NUM - 1; i++)
+    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; i++)
 	block = L_S_function(X_function(block, keys[i]));
     return X_function(block, keys[ITERATIONS_NUM - 1]);
 }
 
 Block S_i_function(Block block) {
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] = REVERSE_PI_ARRAY[block[i]];
     return block;
 }
 
 Block L_i_function(const Block& block) {
     Block result = {0};
-    for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
-	for (unsigned char j = 0; j < SECTIONS_NUMBER; j++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
 	    result[j] ^= poly_multiplication(INVERSED_L_MATRIX[i][j], block[i]);
     return result;
 }
 
 Block decoding(Block block, const Keys& keys) {
     block = S_function(block);
-    for (unsigned char i = ITERATIONS_NUM - 1; i > 0; i--)
+    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--)
 	block = X_function(L_S_i_function(block), keys[i]);
     return X_function(S_i_function(block), keys[0]);
 }
