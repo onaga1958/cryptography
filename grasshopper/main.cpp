@@ -21,8 +21,8 @@ int main() {
 	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
     };
 
-    Block a = string_to_block("1122334455667700ffeeddccbbaa9988");
-    Block b = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
+    uint8_t* a = string_to_block("1122334455667700ffeeddccbbaa9988");
+    uint8_t* b = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
 
     clock_t begin = clock();
     for (long i = 0; i < 65536; i++)
@@ -38,5 +38,9 @@ int main() {
     seconds = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << "decoding: " << 1 / seconds << " MB/sec" << std::endl;
 
+    free(a);
+    free(b);
+    for (uint8_t i = 0; i < ITERATIONS_NUM; i++)
+	free(keys[i]);
     return 0;
 }

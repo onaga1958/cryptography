@@ -68,10 +68,9 @@ const uint8_t INVERSED_L_MATRIX[SECTIONS_NUMBER][SECTIONS_NUMBER] = {
     0x94, 0x84, 0xdd, 0x10, 0xbd, 0x27, 0x5d, 0xb8, 0x7a, 0x48, 0x6c, 0x72, 0x76, 0xa2, 0x6e, 0xcf,
 };
 
-typedef std::array<uint8_t, SECTIONS_NUMBER> Block;
-typedef std::array<Block, ITERATIONS_NUM> Keys;
-typedef std::pair<Block, Block> MainKey;
+typedef std::array<uint8_t*, ITERATIONS_NUM> Keys;
+typedef std::pair<uint8_t*, uint8_t*> MainKey;
 typedef std::array<char *, TESTS_NUM> StringArray;
 
-Block string_to_block(char * str);
-void print_block(const Block& block);
+uint8_t* string_to_block(char * str);
+void print_block(uint8_t * block);

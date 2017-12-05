@@ -6,19 +6,28 @@
 #include "grasshopper.h"
 #include "utils.h"
 
-template <typename T, typename... Rest>
+bool _compare(const uint8_t* block_0, const uint8_t* block_1) {
+    bool result = true;
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+	if (block_0[i] != block_1[i]) {
+	    result = false;
+	    break;
+	}
+    return result;
+}
+
 void _test(
-	Block (*function_to_test)(T block, const Rest&... rest),
+	void (*function_to_test)(uint8_t* block),
 	std::string function_name,
 	const StringArray& input,
-	const StringArray& answers,
-	const Rest&... rest) {
+	const StringArray& answers) {
 
     for (uint8_t i = 0; i < TESTS_NUM; i++) {
-	Block input_block = string_to_block(input[i]);
-	Block answer_block = string_to_block(answers[i]);
-	Block result_block = (*function_to_test)(input_block, rest...);
-	bool compare_result = result_block == answer_block;
+	uint8_t* result_block = string_to_block(input[i]);
+	uint8_t* answer_block = string_to_block(answers[i]);
+	(*function_to_test)(result_block);
+
+	bool compare_result = _compare(result_block, answer_block);
 
 	std::cout << "for function " << function_name << " test number " << int(i) << ": ";
 	std::cout << compare_result << std::endl;
@@ -91,9 +100,15 @@ void test_get_iteration_keys() {
     };
 
     Keys answer = get_iteration_keys(key);
-    bool right = answer == right_keys;
-    std::cout << "get_iteration_keys test: " << right << "\n";
-    if (!right) {
+    bool result = true;
+    for (uint8_t i = 0; i < ITERATIONS_NUM; i++)
+	if (!_compare(answer[i], right_keys[i])) {
+	    result = false;
+	    break;
+	}
+
+    std::cout << "get_iteration_keys test: " << result << "\n";
+    if (!result) {
 	for (int i = 0; i < ITERATIONS_NUM; i++) {
 	    std::cout << "right " << i << " key: ";
 	    print_block(right_keys[i]);
@@ -118,10 +133,11 @@ void test_encoding() {
 	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
     };
 
-    Block a = string_to_block("1122334455667700ffeeddccbbaa9988");
-    Block right_answer = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
-    Block answer = encoding(a, keys);
-    bool right = answer == right_answer;
+    uint8_t* answer = string_to_block("1122334455667700ffeeddccbbaa9988");
+    uint8_t* right_answer = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
+    encoding(answer, keys);
+
+    bool right = _compare(answer, right_answer);
     std::cout << "encoding test: " << right << "\n";
     if (!right) {
 	std::cout << "right: ";
@@ -186,12 +202,13 @@ void test_decoding() {
     };
 
     for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--)
-	keys[i] = L_i_function(keys[i]);
+	L_i_function(keys[i]);
 
-    Block right_answer = string_to_block("1122334455667700ffeeddccbbaa9988");
-    Block b = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
-    Block answer = decoding(b, keys);
-    bool right = answer == right_answer;
+    uint8_t* right_answer = string_to_block("1122334455667700ffeeddccbbaa9988");
+    uint8_t* answer = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
+    decoding(answer, keys);
+
+    bool right = _compare(answer, right_answer);
     std::cout << "decoding test: " << right << "\n";
     if (!right) {
 	std::cout << "right: ";

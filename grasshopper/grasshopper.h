@@ -1,15 +1,16 @@
 #pragma once
 
 #include "utils.h"
+#include <cstring>
 
 uint8_t poly_multiplication(uint8_t a, uint8_t b);
-Block encoding(Block block, const Keys& keys);
-Block X_function(Block block, const Block& key);
-Block S_function(Block block);
-Block L_function(const Block& block);
-MainKey F_function(const Block& block_1, const Block& block_0, const Block& key);
+void encoding(uint8_t* block, const Keys& keys);
+void X_function(uint8_t* block, uint8_t* key);
+void S_function(uint8_t* block);
+void L_function(uint8_t* block);
+MainKey F_function(uint8_t* block_1, uint8_t* block_0, uint8_t* key);
 Keys get_iteration_keys(MainKey key);
-Block encoding(Block block, const Keys& keys);
-Block S_i_function(Block block);
-Block L_i_function(const Block& block);
-Block decoding(Block block, const Keys& keys);
+void encoding(uint8_t* block, const Keys& keys);
+void S_i_function(uint8_t* block);
+void L_i_function(uint8_t* block);
+void decoding(uint8_t* block, const Keys& keys);

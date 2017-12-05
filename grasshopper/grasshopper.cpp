@@ -12,7 +12,7 @@ std::array<uint8_t, N> get_reverse_array(const std::array<uint8_t, N>& array) {
 }
 
 uint8_t poly_multiplication(uint8_t a, uint8_t b) {
-    unsigned short result = 0;
+    uint16_t result = 0;
     for (uint8_t i = 0; i < 8; i++) {
 	if ((a >> i) % 2)
 	    result ^= b << i;
@@ -32,45 +32,50 @@ uint8_t poly_multiplication(uint8_t a, uint8_t b) {
     return result;
 }
 
-Block X_function(Block block, const Block& key) {
+void X_function(uint8_t* block, uint8_t* key) {
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] ^= key[i];
-    return block;
 }
 
-Block S_function(Block block) {
+void S_function(uint8_t* block) {
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] = PI_ARRAY[block[i]];
-    return block;
 }
 
-Block L_function(const Block& block) {
-    Block result = {0};
+void L_function(uint8_t* block) {
+    uint8_t result[SECTIONS_NUMBER] = {0};
+
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
 	    result[j] ^= poly_multiplication(L_MATRIX[i][j], block[i]);
-    return result;
+    memcpy(block, result, SECTIONS_NUMBER);
 }
 
-Block L_S_function(const Block& block) {
-    Block result = {0};
+void L_S_function(uint8_t* block) {
+    uint8_t result[SECTIONS_NUMBER] = {0};
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
 	    result[j] ^= LS_MATRIX[i][block[i]][j];
-    return result;
+    memcpy(block, result, SECTIONS_NUMBER);
 }
 
-Block L_S_i_function(const Block& block) {
-    Block result = {0};
+void L_S_i_function(uint8_t* block) {
+    uint8_t result[SECTIONS_NUMBER] = {0};
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
 	    result[j] ^= INVERSED_LS_MATRIX[i][block[i]][j];
-    return result;
+    memcpy(block, result, SECTIONS_NUMBER);
 }
 
-MainKey F_function(const Block& block_1, const Block& block_0, const Block& key) {
-    Block first = X_function(L_function(S_function(X_function(key, block_1))), block_0);
-    return MainKey(first, block_1);
+MainKey F_function(uint8_t* block_1, uint8_t* block_0, uint8_t* key) {
+    uint8_t* tmp = new uint8_t[SECTIONS_NUMBER];
+    memcpy(tmp, block_1, SECTIONS_NUMBER);
+    X_function(tmp, key);
+    L_S_function(tmp);
+    X_function(tmp, block_0);
+
+    MainKey main_key(tmp, block_1);
+    return main_key;
 }
 
 Keys get_iteration_keys(MainKey key) {
@@ -80,9 +85,10 @@ Keys get_iteration_keys(MainKey key) {
 
     for (uint8_t i = 1; i <= ITERATIONS_NUM / 2 - 1; i++) {
 	for (uint8_t j = 1; j <= 8; j++) {
-	    Block constant_iter = {0};
-	    constant_iter[SECTIONS_NUMBER - 1] = 8 * (i - 1) + j;
-	    Block constant = L_function(constant_iter);
+	    uint8_t constant[SECTIONS_NUMBER] = {0};
+	    constant[SECTIONS_NUMBER - 1] = 8 * (i - 1) + j;
+	    L_function(constant);
+
 	    key = F_function(key.first, key.second, constant);
 	}
 	keys[i * 2] = key.first;
@@ -91,29 +97,33 @@ Keys get_iteration_keys(MainKey key) {
     return keys;
 }
 
-Block encoding(Block block, const Keys& keys) {
-    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; i++)
-	block = L_S_function(X_function(block, keys[i]));
-    return X_function(block, keys[ITERATIONS_NUM - 1]);
+void encoding(uint8_t* block, const Keys& keys) {
+    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; i++) {
+	X_function(block, keys[i]);
+	L_S_function(block);
+    }
+    X_function(block, keys[ITERATIONS_NUM - 1]);
 }
 
-Block S_i_function(Block block) {
+void S_i_function(uint8_t* block) {
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] = REVERSE_PI_ARRAY[block[i]];
-    return block;
 }
 
-Block L_i_function(const Block& block) {
-    Block result = {0};
+void L_i_function(uint8_t* block) {
+    uint8_t result[SECTIONS_NUMBER] = {0};
     for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
 	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
 	    result[j] ^= poly_multiplication(INVERSED_L_MATRIX[i][j], block[i]);
-    return result;
+    memcpy(block, result, SECTIONS_NUMBER);
 }
 
-Block decoding(Block block, const Keys& keys) {
-    block = S_function(block);
-    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--)
-	block = X_function(L_S_i_function(block), keys[i]);
-    return X_function(S_i_function(block), keys[0]);
+void decoding(uint8_t* block, const Keys& keys) {
+    S_function(block);
+    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--) {
+	L_S_i_function(block);
+	X_function(block, keys[i]);
+    }
+    S_i_function(block);
+    X_function(block, keys[0]);
 }
