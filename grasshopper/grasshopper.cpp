@@ -2,6 +2,7 @@
 #include <fstream>
 #include <utility>
 #include "grasshopper.h"
+#include "LS_matrix.h"
 
 std::array<unsigned char, N> get_reverse_array(const std::array<unsigned char, N>& array) {
     std::array<unsigned char, N> result;
@@ -38,24 +39,6 @@ Block X_function(Block block, const Block& key) {
 }
 
 Block S_function(Block block) {
-    /*
-    block[0] = PI_ARRAY[block[0]];
-    block[1] = PI_ARRAY[block[1]];
-    block[2] = PI_ARRAY[block[2]];
-    block[3] = PI_ARRAY[block[3]];
-    block[4] = PI_ARRAY[block[4]];
-    block[5] = PI_ARRAY[block[5]];
-    block[6] = PI_ARRAY[block[6]];
-    block[7] = PI_ARRAY[block[7]];
-    block[8] = PI_ARRAY[block[8]];
-    block[9] = PI_ARRAY[block[9]];
-    block[10] = PI_ARRAY[block[10]];
-    block[11] = PI_ARRAY[block[11]];
-    block[12] = PI_ARRAY[block[12]];
-    block[13] = PI_ARRAY[block[13]];
-    block[14] = PI_ARRAY[block[14]];
-    block[15] = PI_ARRAY[block[15]];
-    */
     for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
 	block[i] = PI_ARRAY[block[i]];
     return block;
@@ -65,7 +48,23 @@ Block L_function(const Block& block) {
     Block result = {0};
     for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
 	for (unsigned char j = 0; j < SECTIONS_NUMBER; j++)
-	    result[j] ^= poly_multiplication(LTransformationMatrix[i][j], block[i]);
+	    result[j] ^= poly_multiplication(L_MATRIX[i][j], block[i]);
+    return result;
+}
+
+Block L_S_function(const Block& block) {
+    Block result = {0};
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
+	    result[j] ^= LS_MATRIX[i][block[i]][j];
+    return result;
+}
+
+Block L_S_i_function(const Block& block) {
+    Block result = {0};
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
+	    result[j] ^= INVERSED_LS_MATRIX[i][block[i]][j];
     return result;
 }
 
@@ -94,7 +93,7 @@ Keys get_iteration_keys(MainKey key) {
 
 Block encoding(Block block, const Keys& keys) {
     for (unsigned char i = 0; i < ITERATIONS_NUM - 1; i++)
-	block = L_function(S_function(X_function(block, keys[i])));
+	block = L_S_function(X_function(block, keys[i]));
     return X_function(block, keys[ITERATIONS_NUM - 1]);
 }
 
@@ -108,12 +107,13 @@ Block L_i_function(const Block& block) {
     Block result = {0};
     for (unsigned char i = 0; i < SECTIONS_NUMBER; i++)
 	for (unsigned char j = 0; j < SECTIONS_NUMBER; j++)
-	    result[j] ^= poly_multiplication(inversedLTransformationMatrix[i][j], block[i]);
+	    result[j] ^= poly_multiplication(INVERSED_L_MATRIX[i][j], block[i]);
     return result;
 }
 
 Block decoding(Block block, const Keys& keys) {
+    block = S_function(block);
     for (unsigned char i = ITERATIONS_NUM - 1; i > 0; i--)
-	block = S_i_function(L_i_function(X_function(block, keys[i])));
-    return X_function(block, keys[0]);
+	block = X_function(L_S_i_function(block), keys[i]);
+    return X_function(S_i_function(block), keys[0]);
 }

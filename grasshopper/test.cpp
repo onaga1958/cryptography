@@ -185,11 +185,14 @@ void test_decoding() {
 	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
     };
 
+    for (unsigned char i = ITERATIONS_NUM - 1; i > 0; i--)
+	keys[i] = L_i_function(keys[i]);
+
     Block right_answer = string_to_block("1122334455667700ffeeddccbbaa9988");
     Block b = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
     Block answer = decoding(b, keys);
     bool right = answer == right_answer;
-    std::cout << "encoding test: " << right << "\n";
+    std::cout << "decoding test: " << right << "\n";
     if (!right) {
 	std::cout << "right: ";
 	print_block(right_answer);
