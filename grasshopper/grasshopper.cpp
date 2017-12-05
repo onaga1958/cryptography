@@ -6,14 +6,14 @@
 
 std::array<uint8_t, N> get_reverse_array(const std::array<uint8_t, N>& array) {
     std::array<uint8_t, N> result;
-    for (unsigned short i = 0; i < N; i++)
+    for (unsigned short i = 0; i < N; ++i)
 	result[array[i]] = i;
     return result;
 }
 
 uint8_t poly_multiplication(uint8_t a, uint8_t b) {
     uint16_t result = 0;
-    for (uint8_t i = 0; i < 8; i++) {
+    for (uint8_t i = 0; i < 8; ++i) {
 	if ((a >> i) % 2)
 	    result ^= b << i;
     }
@@ -33,36 +33,36 @@ uint8_t poly_multiplication(uint8_t a, uint8_t b) {
 }
 
 void X_function(uint8_t* block, uint8_t* key) {
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
-	block[i] ^= key[i];
+    for (uint8_t i = 0; i < 2; ++i)
+	((uint64_t*)block)[i] ^= ((uint64_t*)key)[i];
 }
 
 void S_function(uint8_t* block) {
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; ++i)
 	block[i] = PI_ARRAY[block[i]];
 }
 
 void L_function(uint8_t* block) {
     uint8_t result[SECTIONS_NUMBER] = {0};
 
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
-	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; ++i)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; ++j)
 	    result[j] ^= poly_multiplication(L_MATRIX[i][j], block[i]);
     memcpy(block, result, SECTIONS_NUMBER);
 }
 
 void L_S_function(uint8_t* block) {
     uint8_t result[SECTIONS_NUMBER] = {0};
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
-	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; ++i)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; ++j)
 	    result[j] ^= LS_MATRIX[i][block[i]][j];
     memcpy(block, result, SECTIONS_NUMBER);
 }
 
 void L_S_i_function(uint8_t* block) {
     uint8_t result[SECTIONS_NUMBER] = {0};
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
-	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; ++i)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; ++j)
 	    result[j] ^= INVERSED_LS_MATRIX[i][block[i]][j];
     memcpy(block, result, SECTIONS_NUMBER);
 }
@@ -83,8 +83,8 @@ Keys get_iteration_keys(MainKey key) {
     keys[0] = key.first;
     keys[1] = key.second;
 
-    for (uint8_t i = 1; i <= ITERATIONS_NUM / 2 - 1; i++) {
-	for (uint8_t j = 1; j <= 8; j++) {
+    for (uint8_t i = 1; i <= ITERATIONS_NUM / 2 - 1; ++i) {
+	for (uint8_t j = 1; j <= 8; ++j) {
 	    uint8_t constant[SECTIONS_NUMBER] = {0};
 	    constant[SECTIONS_NUMBER - 1] = 8 * (i - 1) + j;
 	    L_function(constant);
@@ -98,7 +98,7 @@ Keys get_iteration_keys(MainKey key) {
 }
 
 void encoding(uint8_t* block, const Keys& keys) {
-    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; i++) {
+    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; ++i) {
 	X_function(block, keys[i]);
 	L_S_function(block);
     }
@@ -106,14 +106,14 @@ void encoding(uint8_t* block, const Keys& keys) {
 }
 
 void S_i_function(uint8_t* block) {
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; ++i)
 	block[i] = REVERSE_PI_ARRAY[block[i]];
 }
 
 void L_i_function(uint8_t* block) {
     uint8_t result[SECTIONS_NUMBER] = {0};
-    for (uint8_t i = 0; i < SECTIONS_NUMBER; i++)
-	for (uint8_t j = 0; j < SECTIONS_NUMBER; j++)
+    for (uint8_t i = 0; i < SECTIONS_NUMBER; ++i)
+	for (uint8_t j = 0; j < SECTIONS_NUMBER; ++j)
 	    result[j] ^= poly_multiplication(INVERSED_L_MATRIX[i][j], block[i]);
     memcpy(block, result, SECTIONS_NUMBER);
 }

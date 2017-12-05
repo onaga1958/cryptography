@@ -15,7 +15,6 @@ utils:
 add:
 	rm -rf *.o main test
 	git add .
-	echo 'added .'
 
 clean:
 	rm -rf *.o main test

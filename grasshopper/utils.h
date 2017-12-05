@@ -8,6 +8,7 @@ const uint8_t CONSTANTS_NUM = 8;
 const uint8_t ITERATIONS_NUM = 10;
 const unsigned short DIVIDER = 256 + 128 + 64 + 2 + 1;
 const char TESTS_NUM = 4;
+const char path[10] = "table.txt";
 const std::array<uint8_t, SECTIONS_NUMBER> LINEAR_INDEXES = {0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0, 6};
 const std::array<uint8_t, CONSTANTS_NUM> POLY_CONSTANTS = {148, 32, 133, 16, 194, 192, 1, 251};
 const std::array<uint8_t, N> PI_ARRAY = {

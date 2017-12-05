@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <ctime>
 #include <string>
 #include <array>
@@ -6,6 +7,7 @@
 #include <utility>
 #include "grasshopper.h"
 #include "utils.h"
+#include "LS_matrix.h"
 
 int main() {
     Keys keys = {
@@ -37,10 +39,15 @@ int main() {
     end = clock();
     seconds = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << "decoding: " << 1 / seconds << " MB/sec" << std::endl;
-
-    free(a);
-    free(b);
-    for (uint8_t i = 0; i < ITERATIONS_NUM; i++)
-	free(keys[i]);
+    /*
+    std::ofstream f;
+    f.open(path);
+    for (int j = 0; j < 8; ++j)
+	for (int i = 0; i < 256; ++i)
+	    for (int m = 0; m < 256; ++m)
+		for (int p = 0; p < 16; ++p) {
+		    f << (LS_MATRIX[2 * j][i][p] ^ LS_MATRIX[2*j + 1][m][p]) << " ";
+		}
+    */
     return 0;
 }
