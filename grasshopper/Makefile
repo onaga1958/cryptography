@@ -1,20 +1,18 @@
+FLAGS=-Wno-write-strings -Ofast
+
 all: main test
 
 main: grasshopper utils
-	g++ main.cpp grasshopper.o utils.o -o main -Wno-write-strings -Ofast
+	g++ $(FLAGS) main.cpp grasshopper.o utils.o -o main
 
 test: grasshopper utils
-	g++ test.cpp grasshopper.o utils.o -o test -Wno-write-strings -Ofast
+	g++ $(FLAGS) test.cpp grasshopper.o utils.o -o test
 
 grasshopper:
-	g++ -c grasshopper.cpp -o grasshopper.o -Ofast
+	g++ $(FLAGS) -c grasshopper.cpp -o grasshopper.o
 
 utils:
 	g++ -c utils.cpp -o utils.o
-
-add:
-	rm -rf *.o main test
-	git add .
 
 clean:
 	rm -rf *.o main test

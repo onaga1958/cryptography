@@ -135,6 +135,7 @@ void test_encoding() {
 
     uint8_t* answer = string_to_block("1122334455667700ffeeddccbbaa9988");
     uint8_t* right_answer = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
+    set_tables(keys);
     encoding(answer, keys);
 
     bool right = _compare(answer, right_answer);
@@ -201,9 +202,7 @@ void test_decoding() {
 	string_to_block("72e9dd7416bcf45b755dbaa88e4a4043")
     };
 
-    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--)
-	L_i_function(keys[i]);
-
+    set_tables(keys);
     uint8_t* right_answer = string_to_block("1122334455667700ffeeddccbbaa9988");
     uint8_t* answer = string_to_block("7f679d90bebc24305a468d42b9d4edcd");
     decoding(answer, keys);

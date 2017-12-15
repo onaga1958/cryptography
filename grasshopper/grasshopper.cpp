@@ -2,7 +2,9 @@
 #include <fstream>
 #include <utility>
 #include "grasshopper.h"
-#include "LS_matrix.h"
+
+uint8_t LSX_MATRIX[9][256][16];
+uint8_t INVERSED_LSX_MATRIX[9][256][16];
 
 std::array<uint8_t, N> get_reverse_array(const std::array<uint8_t, N>& array) {
     std::array<uint8_t, N> result;
@@ -32,7 +34,7 @@ uint8_t poly_multiplication(uint8_t a, uint8_t b) {
     return result;
 }
 
-void X_function(uint8_t* block, uint8_t* key) {
+void X_function(uint8_t* block, const uint8_t* key) {
     for (uint8_t i = 0; i < 2; ++i)
 	((uint64_t*)block)[i] ^= ((uint64_t*)key)[i];
 }
@@ -67,6 +69,22 @@ void L_S_i_function(uint8_t* block) {
     memcpy(block, result, SECTIONS_NUMBER);
 }
 
+void L_S_X_function(uint8_t* block, uint8_t iteration) {
+    uint8_t result[SECTIONS_NUMBER] = {0};
+    X_function(result, LSX_MATRIX[iteration][block[0]]);
+    for (uint8_t i = 1; i < SECTIONS_NUMBER; ++i)
+	X_function(result, LS_MATRIX[i][block[i]]);
+    memcpy(block, result, SECTIONS_NUMBER);
+}
+
+void L_S_X_i_function(uint8_t* block, uint8_t iteration) {
+    uint8_t result[SECTIONS_NUMBER] = {0};
+    X_function(result, INVERSED_LSX_MATRIX[ITERATIONS_NUM - iteration - 2][block[0]]);
+    for (uint8_t i = 1; i < SECTIONS_NUMBER; ++i)
+	X_function(result, INVERSED_LS_MATRIX[i][block[i]]);
+    memcpy(block, result, SECTIONS_NUMBER);
+}
+
 MainKey F_function(uint8_t* block_1, uint8_t* block_0, uint8_t* key) {
     uint8_t* tmp = new uint8_t[SECTIONS_NUMBER];
     memcpy(tmp, block_1, SECTIONS_NUMBER);
@@ -97,12 +115,28 @@ Keys get_iteration_keys(MainKey key) {
     return keys;
 }
 
+void set_tables(Keys keys) {
+    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; ++i)
+	for (uint16_t k = 0; k < N; ++k) {
+	    memcpy(LSX_MATRIX[i][k], LS_MATRIX[0][k], SECTIONS_NUMBER);
+	    X_function(LSX_MATRIX[i][k], keys[i + 1]);
+	}
+
+    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; --i)
+	L_i_function(keys[i]);
+
+    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; ++i)
+	for (uint16_t k = 0; k < N; ++k) {
+	    memcpy(INVERSED_LSX_MATRIX[i][k], INVERSED_LS_MATRIX[0][k], SECTIONS_NUMBER);
+	    X_function(INVERSED_LSX_MATRIX[i][k], keys[i + 1]);
+	}
+}
+
 void encoding(uint8_t* block, const Keys& keys) {
+    X_function(block, keys[0]);
     for (uint8_t i = 0; i < ITERATIONS_NUM - 1; ++i) {
-	X_function(block, keys[i]);
-	L_S_function(block);
+	L_S_X_function(block, i);
     }
-    X_function(block, keys[ITERATIONS_NUM - 1]);
 }
 
 void S_i_function(uint8_t* block) {
@@ -120,10 +154,8 @@ void L_i_function(uint8_t* block) {
 
 void decoding(uint8_t* block, const Keys& keys) {
     S_function(block);
-    for (uint8_t i = ITERATIONS_NUM - 1; i > 0; i--) {
-	L_S_i_function(block);
-	X_function(block, keys[i]);
-    }
+    for (uint8_t i = 0; i < ITERATIONS_NUM - 1; ++i)
+	L_S_X_i_function(block, i);
     S_i_function(block);
     X_function(block, keys[0]);
 }
