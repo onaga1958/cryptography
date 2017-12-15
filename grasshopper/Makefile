@@ -1,4 +1,4 @@
-FLAGS=-Wno-write-strings -Ofast
+FLAGS=-Wno-write-strings -Ofast -msse -msse2 -msse3 -mfpmath=sse
 
 all: main test
 
